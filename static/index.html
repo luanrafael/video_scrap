@@ -31,7 +31,7 @@
           <div class="collapsible-header blue-text text-darken-1">
             <i class="material-icons">list</i>
             {{spider.title}}
-            <span class="right">
+            <span class="right created">
               {{spider.created}}
             </span>
           </div>
@@ -50,10 +50,16 @@
 
             <ul class="collection" >
               <li class="collection-item episode blue-text text-darken-1" ng-repeat='ep in spider.data | filter:search_ep' ng-click="open_video_modal(ep)">
-                {{ep.title}}
-                <a href="#!" class="secondary-content blue-text text-darken-1">
-                  <i class="material-icons">play_circle_filled</i>
-                </a>
+                <div class="row episode-row">                
+                  <div class="col s10">
+                    {{ep.title}}
+                  </div>
+                  <div class="col s2">
+                    <a href="#!" class="secondary-content blue-text text-darken-1">
+                      <i class="material-icons">play_circle_filled</i>
+                    </a>
+                  </div>
+                </div>
               </li>
             </ul>
 

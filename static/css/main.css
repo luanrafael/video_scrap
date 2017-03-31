@@ -3,10 +3,11 @@
   width:80%;
   height:80%;
 }
+*/
 
-.modal video.responsive-video {
-	width: 80%;
-}*/
+#videoModal {
+	width: 100%;
+}
 
 #closeVideoModal {
 	z-index: 1003;
@@ -44,4 +45,15 @@ li.serie {
 /* icon prefix focus color */
 .input-field .prefix.active {
 	color: #FFF;
+}
+
+
+
+span.created {
+    font-size: 0.85em;
+    font-weight: normal;
+}
+
+.row.episode-row {
+	margin-bottom: 0px;
 }
