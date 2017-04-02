@@ -151,8 +151,8 @@ def run_all():
 
 process = CrawlerProcess(get_project_settings())
 sched = TwistedScheduler()
-sched.add_job(process.crawl, 'cron', args=[DragonBallSuperSpider], day_of_week='sun', hour='*')
-sched.add_job(process.crawl, 'cron', args=[Scorpion3], day_of_week='mon', hour='*')
+sched.add_job(process.crawl, 'cron', args=[DragonBallSuperSpider], day_of_week='sun-mon', hour='*')
+sched.add_job(process.crawl, 'cron', args=[Scorpion3], day_of_week='sun-mon', hour='*')
 
 sched.start()
 process.start(False)
