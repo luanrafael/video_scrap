@@ -27,6 +27,21 @@ def get_spiders():
 	return json.dumps(output)
 
 
+@app.route("/api/v1/spider/<id>", methods=['POST'])
+def update_spider(id):
+	print('####' + id)
+
+	data_json = request.json
+	data = json.dumps(data_json)
+	path = os.path.dirname(os.path.abspath(__file__))
+	file_path = path + '/static/json/' + id + '.json'
+	file_json = open(file_path,'w')
+	file_json.write(data)
+	file_json.close()
+
+	return "ok"
+
+
 @app.route("/")
 def home():
 	return redirect('/static/index.html', code=302)

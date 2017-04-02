@@ -7,7 +7,7 @@ import re
 from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 from apscheduler.schedulers.twisted import TwistedScheduler
-
+import requests
 
 class Scorpion3(scrapy.Spider):
 
@@ -136,23 +136,36 @@ def write_json_spider(spider):
     file_json.write(data)
     file_json.close()
 
+    send_spider(spider.name, data_json)
+
+
+def send_spider(id, data):
+
+    headers = {'content-type': 'application/json'}
+    url = 'http://localhost:5000/api/v1/spider/' + str(id)
+    requests.post(url, headers=headers, data=json.dumps(data))
+
+
 
 def run_all():
     process = CrawlerProcess(get_project_settings())
 
-    process.crawl(DragonBallSuperSpider)
+    #process.crawl(DragonBallSuperSpider)
     process.crawl(Scorpion3)
-    process.crawl(NarutoShippudenSpider)
+    #process.crawl(NarutoShippudenSpider)
     process.start()
 
 
 
 
 
-process = CrawlerProcess(get_project_settings())
-sched = TwistedScheduler()
-sched.add_job(process.crawl, 'cron', args=[DragonBallSuperSpider], day_of_week='sun-mon', hour='*')
-sched.add_job(process.crawl, 'cron', args=[Scorpion3], day_of_week='sun-mon', hour='*')
+# process = CrawlerProcess(get_project_settings())
+# sched = TwistedScheduler()
+# sched.add_job(process.crawl, 'cron', args=[DragonBallSuperSpider], day_of_week='sun-mon', hour='*')
+# sched.add_job(process.crawl, 'cron', args=[Scorpion3], day_of_week='sun-mon', hour='*')
 
-sched.start()
-process.start(False)
+# sched.start()
+# process.start(False)
+
+
+run_all()
