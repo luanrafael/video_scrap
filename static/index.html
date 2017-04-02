@@ -30,6 +30,7 @@
           
           <div class="collapsible-header blue-text text-darken-1">
             <i class="material-icons">list</i>
+            <span class="new badge red lighten-1" ng-show="spider.has_new"></span>
             {{spider.title}}
             <span class="right created">
               {{spider.created}}
@@ -55,8 +56,8 @@
                     {{ep.title}}
                   </div>
                   <div class="col s2">
-                    <a href="#!" class="secondary-content blue-text text-darken-1">
-                      <i class="material-icons">play_circle_filled</i>
+                    <a href="#!" class="secondary-content  btn btn-floating" ng-class="ep.new ? 'pulse red lighten-1' : 'blue'">
+                      <i class="material-icons" >play_circle_filled</i>
                     </a>
                   </div>
                 </div>

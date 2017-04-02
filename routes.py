@@ -10,7 +10,6 @@ import json
 import glob
 import os
 
-
 app = Flask(__name__)
 
 

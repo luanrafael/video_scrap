@@ -5,6 +5,9 @@ import os
 import datetime
 import re
 from scrapy.utils.log import configure_logging
+from scrapy.utils.project import get_project_settings
+from apscheduler.schedulers.twisted import TwistedScheduler
+
 
 class Scorpion3(scrapy.Spider):
 
@@ -12,17 +15,11 @@ class Scorpion3(scrapy.Spider):
     title = 'Scorpion 3 Temporada'
     start_urls = ['http://assistirvideo.com/2016/10/assistir-scorpion-3-temporada-online.html']
     eps = []
-
-    def __init__(self):
-        configure_logging({'LOG_FILE' : self.name + ".log"})
+    videos = []
 
     def parse(self, response):
         links = response.css('[itemprop="episode"] a[itemprop=url] ::attr(href)').extract()
-        print("***LINKS****")
-        print(links)
         titles = response.css('[itemprop="episode"] span[itemprop=name] ::text').extract()
-        print("***TITULOS****")
-        print(titles)
         i = 0
         for ep in links:
             yield scrapy.Request(response.urljoin(ep), callback=self.download,  meta={'title': titles[i], 'ep': i+1})
@@ -32,25 +29,13 @@ class Scorpion3(scrapy.Spider):
         video = response.css('video source ::attr(src)').extract_first()
         title = response.meta.get('title')
         ep = response.meta.get('ep')
-        print("#### VIDEO ###")
-        print(video)
-        print("#### TITULO ###")
-        print(title)
-        self.eps.append({'video': video, 'title': title, 'ep': ep})
+        if video not in self.videos:
+            self.videos.append(video)
+            self.eps.append({'video': video, 'title': title, 'ep': ep})
 
     def closed(self, spider):
-        sorted_eps = sorted(self.eps, key=lambda k: k['ep'], reverse=True) 
-        path = os.path.dirname(os.path.abspath(__file__))
+        write_json_spider(self)
 
-        data_json = {'data': sorted_eps, 'title': self.title, 'created': datetime.datetime.now().strftime('%d-%m-%Y %H:%M')}
-        
-        data = json.dumps(data_json)
-
-        file_json = open(path + '/static/json/' + self.name + '.json','w')
-        file_json.write(data)
-        file_json.close()
-
-#
 
 class DragonBallSuperSpider(scrapy.Spider):
 
@@ -58,9 +43,7 @@ class DragonBallSuperSpider(scrapy.Spider):
     title = 'Dragon Ball Super'
     start_urls = ['https://www.animesfox-br.com.br/159198.html']
     eps = []
-
-    def __init__(self):
-        configure_logging({'LOG_FILE' : self.name + ".log"})
+    videos = []
 
     def parse(self, response):
         links = response.css('.lcp_catlist a ::attr(href)').extract()
@@ -70,22 +53,15 @@ class DragonBallSuperSpider(scrapy.Spider):
     def download(self, response):
         videos = response.css('video ::attr(src)').extract()
         title = response.css('#postitulo ::text').extract()
-        ep = [int(s) for s in re.findall(r'\b\d+\b', title[1])][-1]
+        ep = extract_ep_number(title)
+
         for video in videos:
-            if 'contentId' in video:
+            if 'contentId' in video and video not in self.videos:
+                self.videos.append(video)
                 self.eps.append({'video': video, 'title': title[1], 'ep': ep}) 
 
     def closed(self, spider):
-        sorted_eps = sorted(self.eps, key=lambda k: k['ep'], reverse=True)
-        path = os.path.dirname(os.path.abspath(__file__))
-
-        data_json = {'data': sorted_eps, 'title': self.title, 'created': datetime.datetime.now().strftime('%d-%m-%Y %H:%M')}
-        
-        data = json.dumps(data_json)
-
-        file_json = open(path + '/static/json/' + self.name + '.json','w')
-        file_json.write(data)
-        file_json.close()
+        write_json_spider(self)
 
 class NarutoShippudenSpider(scrapy.Spider):
 
@@ -93,9 +69,7 @@ class NarutoShippudenSpider(scrapy.Spider):
     title = 'Naruto Shippuden'
     start_urls = ['http://www.animesfox-br.com.br/150794.html']
     eps = []
-
-    def __init__(self):
-        configure_logging({'LOG_FILE' : self.name + ".log"})
+    videos = []
 
     def parse(self, response):
         links = response.css('.lcp_catlist a ::attr(href)').extract()
@@ -105,28 +79,66 @@ class NarutoShippudenSpider(scrapy.Spider):
     def download(self, response):
         videos = response.css('video ::attr(src)').extract()
         title = response.css('#postitulo ::text').extract()
-        ep = [int(s) for s in re.findall(r'\b\d+\b', title[1])][-1]
+        ep = extract_ep_number(title)
+
         for video in videos:
-            if 'contentId' in video:
+            if 'https://' in video:
+                continue
+            if 'contentId' in video and video not in self.videos:
+                self.videos.append(video)
                 self.eps.append({'video': video, 'title': title[1], 'ep': ep}) 
 
     def closed(self, spider):
-        sorted_eps = sorted(self.eps, key=lambda k: k['ep'], reverse=True)
-        path = os.path.dirname(os.path.abspath(__file__))
+        write_json_spider(self)
 
-        data_json = {'data': sorted_eps, 'title': self.title, 'created': datetime.datetime.now().strftime('%d-%m-%Y %H:%M')}
-        
-        data = json.dumps(data_json)
 
-        file_json = open(path + '/static/json/' + self.name + '.json','w')
-        file_json.write(data)
-        file_json.close()
+def extract_ep_number(title):
+    numbers = [int(s) for s in re.findall(r'\b\d+\b', title[1])]
+    
+    if len(numbers) > 0:
+        return numbers[-1]
+    else:
+        return 1000
+
+
+def write_json_spider(spider):
+    sorted_eps = sorted(spider.eps, key=lambda k: k['ep'], reverse=True)
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    file_path = path + '/static/json/' + spider.name + '.json'
+    
+    isfile = False
+    if os.path.isfile(file_path):
+        isfile = True
+        with open(file_path, 'r') as current_file_json:
+            current_data = json.loads(current_file_json.read())
+        current_file_json.close()
+
+    data = []
+
+    has_new = False
+    current_date = datetime.datetime.now().strftime('%d%m%Y')
+
+    for ep in sorted_eps:
+        if isfile and ep in current_data['data'] and current_data['date'] == current_date:
+            ep['new'] = False
+        else:
+            has_new = True
+            ep['new'] = True
+
+        data.append(ep)
+
+    data_json = {'data': data, 'has_new': has_new, 'title': spider.title, 'created': datetime.datetime.now().strftime('%d-%m-%Y %H:%M'), 'date': current_date}
+    
+    data = json.dumps(data_json)
+
+    file_json = open(file_path,'w')
+    file_json.write(data)
+    file_json.close()
 
 
 def run_all():
-    process = CrawlerProcess({
-        'USER_AGENT': 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
-    })
+    process = CrawlerProcess(get_project_settings())
 
     process.crawl(DragonBallSuperSpider)
     process.crawl(Scorpion3)
@@ -134,5 +146,13 @@ def run_all():
     process.start()
 
 
- 
-run_all()
+
+
+
+process = CrawlerProcess(get_project_settings())
+sched = TwistedScheduler()
+sched.add_job(process.crawl, 'cron', args=[DragonBallSuperSpider], day_of_week='sun', hour='*')
+sched.add_job(process.crawl, 'cron', args=[Scorpion3], day_of_week='mon', hour='*')
+
+sched.start()
+process.start(False)
