@@ -11,5 +11,22 @@ $(document).ready(function(){
       	}
 	});
 
+
+	update_height($('.login-form-container '));
+
+	window.onresize = function(){
+		update_height($('.login-form-container'));
+	};
 	
 })
+
+
+function update_height(element) {
+
+	var wh = window.innerHeight - 20;
+
+	element.height(wh);
+	element.removeClass('hide');
+
+
+}

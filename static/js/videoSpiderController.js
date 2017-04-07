@@ -4,8 +4,6 @@ angular.module('videoSpider').controller('videoSpiderController', function($scop
 
 	$http.get('/getSiders').then(function(response) {
 
-		console.log(response)
-
 		if(response){
 
 			$scope.spiders = response.data;
