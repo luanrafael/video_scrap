@@ -45,7 +45,7 @@ app.controller('LoginController', function($scope, $location, utils){
 app.controller('videoSpiderController', ['$scope','$http', 'video', function($scope, $http, video) {
 	
 
-
+	$('body').removeClass('overflow-hidden')
 	$('.collapsible').collapsible();
 
 	$('.modal').modal({
