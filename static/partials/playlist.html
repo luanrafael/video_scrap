@@ -1,0 +1,72 @@
+<div ng-controller="videoSpiderController">
+<div class="container">
+
+      <div class="row">
+        <div class="col s12 center">
+          <div class="input-field col s12 m6 offset-m3 white-text">
+            <i class="material-icons prefix">search</i>
+            <input id="icon_prefix" type="text" class="validate" ng-model="search.title">
+            <label for="icon_prefix">Filtrar</label>
+          </div>
+        </div>
+      </div>
+      
+      <section vi-playlist>
+        <ul class="collapsible" data-collapsible="accordion" >
+          <li ng-repeat="playlist in playlists | filter:search" class="serie">
+            
+            <div class="collapsible-header blue-text text-darken-1">
+              <i class="material-icons">list</i>
+                {{playlist.title}}
+              </span>
+            </div>
+
+            <div class="collapsible-body">
+
+              <div class="row">
+                <div class="col s12 center">
+                  <div class="input-field col s12 m6 white-text">
+                    <i class="material-icons prefix">search</i>
+                    <input id="icon_prefix" type="text" class="validate" ng-model="playlist.title">
+                    <label for="icon_prefix">Filtrar</label>
+                  </div>
+                </div>
+              </div>
+
+              <ul class="collection" >
+                <li vi-playlist-video class="collection-item episode blue-text text-darken-1" ng-repeat='video in videos | filter:search_ep' ng-model="video">
+                  {{video.src}}
+                </li>
+              </ul>
+
+            </div>
+          </li>
+        </ul>
+      </section>
+
+
+      <section ng-video>
+        <video id="videoModal" class="modal" class="responsive-video" autoplay autobuffer vi-screen>
+        </video>
+        <div class="fixed-action-btn " id="closeVideoModal">
+          <section vi-controls class="fixed-action-btn video-controlls">
+              <a class="btn-floating white " vi-controls-play ng-hide="playing">
+                <i class="material-icons blue-text">play_circle_filled</i>
+              </a>
+              <a class="btn-floating white " vi-controls-pause ng-show="playing">
+                <i class="material-icons blue-text">pause_circle_filled</i>
+                <i class="material-icons blue-text">fullscreen</i>
+              </a>
+              <a class="btn-floating white " ng-click="fullscreen_video()">
+                <i class="material-icons blue-text">fullscreen</i>
+              </a>
+              <a class="btn-floating white " ng-click="close_video_modal()">
+                <i class="material-icons red">close</i>
+              </a>
+          </section>
+
+        </div>
+      </section>
+
+</div>
+</div>
