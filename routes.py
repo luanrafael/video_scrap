@@ -13,26 +13,46 @@ import os
 app = Flask(__name__)
 
 
-@app.route("/getSiders")
-def get_spiders():
+@app.route("/getSpiders/<id>")
+@app.route("/getSpiders")
+def get_spiders(id = None):
 
-	json_paths = glob.glob("static/json/*.json")
+	
+	if id is not None:
+		json_path = "static/json/" + id
+		with open(json_path, 'r') as file:
+ 			data = json.loads(file.read())
+		file.close()
+		return json.dumps(data)
 
 	output = []
+	json_paths = glob.glob("static/json/*.json")
+
+	
 	for json_path in json_paths:
+		
 		with open(json_path, 'r') as file:
-			data = json.loads(file.read())
+ 			data = json.loads(file.read())
+		file.close()
+		id = json_path.split("/")[-1]
+		data['data'] = []
+		data['id'] = id
 		output.append(data)
 
 	return json.dumps(output)
 
 
+
 @app.route("/api/v1/spider/<id>", methods=['POST'])
 def update_spider(id):
-	print('####' + id)
 
 	data_json = request.json
+	
+	if 'id' not in data_json:
+		data_json['id'] = id
+	
 	data = json.dumps(data_json)
+
 	path = os.path.dirname(os.path.abspath(__file__))
 	file_path = path + '/static/json/' + id + '.json'
 	file_json = open(file_path,'w')

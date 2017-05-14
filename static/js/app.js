@@ -60,9 +60,14 @@ app.controller('videoSpiderController', ['$scope','$http', function($scope, $htt
       	}
 	});
 
+
+	$scope.video = {'paused' : false};
+
+
+
    	$scope.ep = {"title":"", "video": ""};
 
-	$http.get('/getSiders').then(function(response) {
+	$http.get('/getSpiders').then(function(response) {
 
 		if(response){
 
@@ -72,17 +77,63 @@ app.controller('videoSpiderController', ['$scope','$http', function($scope, $htt
 
 	});
 
+	$scope.load_videos = function(index) {
+
+		spider = $scope.spiders[index];
+		if(!spider.data || spider.data.length == 0) {
+			$http.get("/getSpiders/" + spider.id).then(function(response){
+				$scope.spiders[index].data = response.data.data;
+			})
+		}
+
+	}
+
 	$scope.open_video_modal = function(ep) {
 
 		if($scope.ep !== ep)
 			$scope.ep = ep;
-
+		$scope.ep.visited = true;
 		$('#videoModal').modal('open');
+
+	}
+
+	$scope.play_pause_video = function() {
+		$('#videoModal')[0].paused ? $scope.play_video() : $scope.pause_video();
+	}
+
+	$scope.play_video = function(){
+		$('#videoModal')[0].play();
+		$scope.update_video_status();
+	}
+
+	$scope.pause_video = function(){
+		$('#videoModal')[0].pause();
+		$scope.update_video_status();
 	}
 
 	$scope.close_video_modal = function() {
 		$('#videoModal').modal('close');
-		$('#videoModal')[0].pause()
+		$('#videoModal')[0].pause();
 	}
+
+	var videoElement = $('#videoModal')[0];
+
+	videoElement.addEventListener('play', function(){
+		$scope.$apply(function() {
+			$scope.update_video_status();
+	  	});
+	});
+
+	videoElement.addEventListener('pause', function(){
+		$scope.$apply(function() {
+			$scope.update_video_status();
+	  	});
+	});
+
+	$scope.update_video_status = function(){
+		$scope.video.paused = !$('#videoModal')[0].paused;
+		console.log($scope.video.paused);
+	}
+
 
 }]);
